@@ -1,0 +1,32 @@
+version: '3.4'
+
+services:
+  consoleapp.crud.basico:
+    image: ${DOCKER_REGISTRY-}consoleappcrudbasico
+    build:
+      context: .
+      dockerfile: consoleapp.crud.basico/Dockerfile
+  
+  sql-server:
+    container_name: sql-server
+    image: mcr.microsoft.com/mssql/server
+    environment: 
+        ACCEPT_EULA: "Y"
+        MSSQL_SA_PASSWORD: "AulaGeekJobs1"
+        MSSQL_PID: "Developer"
+    volumes:
+        - ./docker/sql-server/dados/:/var/opt/mssql/data  
+    ports:
+        - "1522:1433"    
+  
+  mssqltools:
+    image: mcr.microsoft.com/mssql-tools
+    container_name: "mssqltools"
+    depends_on:
+        - sql-server
+    volumes:
+        - ./docker/sql-server/scripts/:/tmp/scripts/
+    command: 
+        /bin/bash -c '
+            /tmp/scripts/init-database.sh;
+            sleep infinity;'
